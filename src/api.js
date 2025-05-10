@@ -1,7 +1,7 @@
 // src/api.js - API Service for Signature Verification System
 
 // Base API URL - adjust this to match your Django server
-const API_BASE_URL = 'https://0010-111-88-37-209.ngrok-free.app/api';
+const API_BASE_URL = 'https://069e-111-88-37-209.ngrok-free.app/api';
 const AUTH_BASE_URL = `${API_BASE_URL}/auth`;
 
 // Helper for handling token storage
