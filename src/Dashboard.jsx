@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Dashboard.css';
 import { profilesAPI, signaturesAPI, verificationAPI } from './api';
+import SignatureCaptureModal from './SignatureCaptureModal';
+import VerifySignatureForm from './VerifySignatureForm';
 
 const Dashboard = ({ user, onLogout }) => {
   const [activePage, setActivePage] = useState('verify');
@@ -22,6 +24,10 @@ const Dashboard = ({ user, onLogout }) => {
   const [saveToReferences, setSaveToReferences] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState('');
   const [verificationHistory, setVerificationHistory] = useState([]);
+  
+  // Camera capture related state
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraType, setCameraType] = useState('');
   
   const fileInputRef = useRef(null);
   const verificationFileRef = useRef(null);
@@ -177,7 +183,8 @@ const Dashboard = ({ user, onLogout }) => {
     setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
   
-  // Handle add user form submission
+  // Enhanced handleAddUser with better error tracking
+  
   const handleAddUser = async () => {
     if (!newUserName.trim()) {
       setErrorMessage('Please enter a user name');
@@ -199,17 +206,39 @@ const Dashboard = ({ user, onLogout }) => {
         id_number: newUserIdNumber.trim()
       };
       
+      console.log('Creating profile with data:', profileData);
       const newProfile = await profilesAPI.create(profileData);
       
       if (newProfile.error) {
         setErrorMessage(newProfile.error || 'Failed to create user profile');
+        setIsLoading(false);
         return;
       }
       
+      console.log('Profile created successfully:', newProfile);
+      
       // Upload signatures if any are selected
+      let uploadedCount = 0;
+      let uploadErrors = [];
+      
       if (selectedFiles.length > 0) {
         for (const file of selectedFiles) {
-          await signaturesAPI.upload(newProfile.id, file);
+          console.log(`Uploading signature ${uploadedCount + 1}/${selectedFiles.length}:`, file.name);
+          
+          try {
+            const uploadResult = await signaturesAPI.upload(newProfile.id, file);
+            
+            if (uploadResult.error) {
+              uploadErrors.push(`Failed to upload ${file.name}: ${uploadResult.error}`);
+              console.error('Signature upload failed:', uploadResult.error);
+            } else {
+              uploadedCount++;
+              console.log(`Signature ${uploadedCount} uploaded successfully`);
+            }
+          } catch (uploadError) {
+            console.error('Exception during upload:', uploadError);
+            uploadErrors.push(`Error uploading ${file.name}: ${uploadError.message}`);
+          }
         }
       }
       
@@ -222,8 +251,19 @@ const Dashboard = ({ user, onLogout }) => {
       // Refresh user profiles
       fetchUserProfiles();
       
-      setSuccessMessage(`User profile for ${newProfile.name} created successfully`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      if (uploadErrors.length > 0) {
+        // Show partial success message
+        setSuccessMessage(`User profile created, but ${uploadErrors.length} signature upload(s) failed.`);
+        console.warn('Some signature uploads failed:', uploadErrors);
+      } else if (selectedFiles.length > 0) {
+        // Show complete success message
+        setSuccessMessage(`User profile for ${newProfile.name} created with ${uploadedCount} signature(s).`);
+      } else {
+        // No signatures included
+        setSuccessMessage(`User profile for ${newProfile.name} created successfully.`);
+      }
+      
+      setTimeout(() => setSuccessMessage(''), 5000); // Show message longer
     } catch (error) {
       console.error('Error creating user profile:', error);
       setErrorMessage('Failed to create user profile. Please try again.');
@@ -270,6 +310,32 @@ const Dashboard = ({ user, onLogout }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Camera capture functions
+  const captureReferenceFromCamera = () => {
+    setCameraType('reference');
+    setShowCameraModal(true);
+  };
+
+  const captureVerificationFromCamera = () => {
+    setCameraType('verification');
+    setShowCameraModal(true);
+  };
+
+  const handleCapturedSignature = (file) => {
+    setShowCameraModal(false);
+    
+    if (cameraType === 'reference') {
+      // Handle reference signature - add to selectedFiles
+      setSelectedFiles(prevFiles => [...prevFiles, file]);
+    } else if (cameraType === 'verification') {
+      // Handle verification signature
+      setVerificationFile(file);
+    }
+    
+    setSuccessMessage(`Signature captured from camera`);
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
   
   // Trigger file input click
@@ -335,6 +401,18 @@ const Dashboard = ({ user, onLogout }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
               </svg>
               Select Signature Image
+            </button>
+            <button 
+              type="button" 
+              className="file-upload-button"
+              onClick={captureVerificationFromCamera}
+              style={{ marginLeft: '10px', backgroundColor: 'rgba(13, 211, 197, 0.2)' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Capture from Camera
             </button>
             {verificationFile && (
               <div className="selected-files" style={{ marginTop: '10px' }}>
@@ -787,6 +865,18 @@ const Dashboard = ({ user, onLogout }) => {
                     </svg>
                     Upload Signatures
                   </button>
+                  <button 
+                    type="button" 
+                    className="file-upload-button"
+                    onClick={captureReferenceFromCamera}
+                    style={{ marginLeft: '10px', backgroundColor: 'rgba(13, 211, 197, 0.2)' }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Capture from Camera
+                  </button>
                   <span className="file-help-text">Choose multiple signature images</span>
                 </div>
                 
@@ -830,6 +920,15 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Camera Capture Modal */}
+      {showCameraModal && (
+        <SignatureCaptureModal
+          onImageCaptured={handleCapturedSignature}
+          onCancel={() => setShowCameraModal(false)}
+          type={cameraType}
+        />
       )}
     </div>
   );

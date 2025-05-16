@@ -1,7 +1,5 @@
-// src/api.js - API Service for Signature Verification System
-
-// Base API URL - adjust this to match your Django server
-const API_BASE_URL = 'https://069e-111-88-37-209.ngrok-free.app/api';
+// api.js
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 const AUTH_BASE_URL = `${API_BASE_URL}/auth`;
 
 // Helper for handling token storage
@@ -12,10 +10,11 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 export const removeToken = () => localStorage.removeItem(TOKEN_KEY);
 
-// Headers configuration
+// Headers configuration with better CORS handling
 const getHeaders = () => {
   const headers = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   };
   
   const token = getToken();
@@ -26,38 +25,74 @@ const getHeaders = () => {
   return headers;
 };
 
-// API request helper
+// Enhanced API request helper with better error handling
 const apiRequest = async (endpoint, method = 'GET', data = null, includeToken = true) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}/${endpoint}`;
   
   const options = {
     method,
-    headers: includeToken ? getHeaders() : { 'Content-Type': 'application/json' },
+    headers: includeToken ? getHeaders() : { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    credentials: 'include', // Important for CORS with credentials
   };
   
   if (data) {
     if (data instanceof FormData) {
       // For file uploads, remove Content-Type to let the browser set it
       delete options.headers['Content-Type'];
+      
+      // Log FormData contents for debugging (without file contents)
+      console.log(`API Request: ${method} ${url} with FormData`);
+      for (let [key, value] of data.entries()) {
+        console.log(`- FormData field: ${key} = ${value instanceof File ? value.name : value}`);
+      }
+      
       options.body = data;
     } else {
       options.body = JSON.stringify(data);
+      console.log(`API Request: ${method} ${url}`, data);
     }
+  } else {
+    console.log(`API Request: ${method} ${url}`);
   }
   
   try {
     const response = await fetch(url, options);
+    console.log(`API Response status: ${response.status} ${response.statusText}`);
     
     // Handle 401 unauthorized errors (token expired)
     if (response.status === 401) {
+      console.log('Authentication error - clearing token');
       removeToken();
-      window.location.href = '/login';
       return { error: 'Authentication failed. Please log in again.' };
     }
     
-    const result = await response.json();
+    // Get response text first
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+    
+    // Try to parse as JSON
+    let result;
+    try {
+      result = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      console.warn('Response is not valid JSON');
+      
+      // For successful non-JSON responses (like 204 No Content)
+      if (response.ok) {
+        return { success: true };
+      }
+      
+      return { 
+        error: `Server returned status ${response.status} with non-JSON response`,
+        rawResponse: responseText
+      };
+    }
     
     if (!response.ok) {
+      console.error('API Error:', result);
       return { error: result.detail || 'An error occurred', details: result };
     }
     
@@ -135,15 +170,41 @@ export const signaturesAPI = {
   },
   
   upload: async (profileId, imageFile, notes = '') => {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    formData.append('user_profile', profileId);
+    console.log('Uploading signature for profile:', profileId);
+    console.log('File information:', {
+      name: imageFile.name,
+      type: imageFile.type,
+      size: imageFile.size
+    });
     
+    const formData = new FormData();
+    
+    // Add image file - name must match Django model field
+    formData.append('image', imageFile);
+    
+    // Match the exact field name from SignatureSerializer and models.py
+    formData.append('user_profile', String(profileId));
+    
+    // Add notes if provided
     if (notes) {
       formData.append('notes', notes);
     }
     
-    return await apiRequest('signatures/', 'POST', formData);
+    try {
+      console.log(`Sending signature to API: ${imageFile.name} for profile ${profileId}`);
+      const result = await apiRequest('signatures/', 'POST', formData);
+      
+      if (result.error) {
+        console.error('Signature upload failed:', result.error);
+        return { success: false, error: result.error };
+      }
+      
+      console.log('Signature upload successful:', result);
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Exception during signature upload:', error);
+      return { success: false, error: 'Upload failed - see console for details' };
+    }
   },
   
   delete: async (id) => {
