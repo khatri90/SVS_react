@@ -1,8 +1,11 @@
 # Signature Verification System - Frontend
 
-A modern React-based frontend for the Signature Verification System, designed to capture, manage, and verify signatures using advanced image processing.
+A state-of-the-art React-based frontend for the Signature Verification System. This application enables secure user authentication, real-time signature capture via camera or upload, and advanced verification against stored profiles using backend image processing.
 
-![Landing Page](./login.png)
+### Screenshots
+| Login Page | Dashboard / History |
+|:---:|:---:|
+| ![Login](./login.png) | ![Dashboard](./dashboard.png) |
 
 ## Features
 
@@ -19,19 +22,19 @@ A modern React-based frontend for the Signature Verification System, designed to
 
 ```mermaid
 graph LR
-    User[User / Client] --> ReactApp[React Frontend (Vite)]
+    User[User / Client] --> ReactApp[React Frontend - Vite]
     ReactApp -->|HTTP/REST| DjangoAPI[Django Backend API]
     DjangoAPI -->|Auth/Data| DB[(Database)]
     DjangoAPI -->|Image Processing| CV[OpenCV / TensorFlow]
     
     subgraph Frontend
-    ReactApp
+        ReactApp
     end
     
     subgraph Backend
-    DjangoAPI
-    DB
-    CV
+        DjangoAPI
+        DB
+        CV
     end
 ```
 
