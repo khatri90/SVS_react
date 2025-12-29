@@ -144,10 +144,6 @@ const LoginPage = ({ onLoginSuccess }) => {
           </div>
         </div>
         
-        <div className="forgot-password">
-          <a href="#">Forgot Password?</a>
-        </div>
-        
         <button
           onClick={handleSubmit}
           disabled={isLoading}

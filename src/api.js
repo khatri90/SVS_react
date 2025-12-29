@@ -224,9 +224,27 @@ export const verificationAPI = {
       formData.append('notes', notes);
     }
     
-    return await apiRequest('verify/', 'POST', formData);
+    try {
+      console.log(`Sending verification request for profile ${profileId}`);
+      const result = await apiRequest('verify/', 'POST', formData);
+      
+      if (result.error) {
+        console.error('Verification request failed:', result.error);
+        return { error: result.error || 'Verification failed' };
+      }
+      
+      console.log('Verification completed successfully');
+      return result;
+    } catch (error) {
+      console.error('Exception during verification request:', error);
+      return { 
+        error: 'Verification failed - server error', 
+        details: error.message || 'Unknown error'
+      };
+    }
   },
   
+  // Keep other methods unchanged
   getHistory: async () => {
     return await apiRequest('verification-records/');
   },

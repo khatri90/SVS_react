@@ -1,0 +1,331 @@
+/* Base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Register page container */
+  .register-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #000;
+    overflow: hidden;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  /* Animated background grid */
+  .background-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    background-image: linear-gradient(to right, #0dd3c5 1px, transparent 1px), 
+                      linear-gradient(to bottom, #0dd3c5 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  /* Particle element */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background-color: #0dd3c5;
+    opacity: 0.2;
+  }
+  
+  /* Register form container */
+  .register-card {
+    width: 100%;
+    max-width: 32rem;
+    margin: auto;
+    z-index: 10;
+    background-color: rgba(17, 24, 39, 0.8);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #0dd3c5;
+    backdrop-filter: blur(4px);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Logo container */
+  .logo-container {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .logo-wrapper {
+    width: 6rem;
+    height: 6rem;
+    position: relative;
+  }
+  
+  /* Logo animation */
+  .logo-pulse {
+    transition: transform 0.7s;
+  }
+  
+  .logo-pulse.active {
+    transform: scale(1.05);
+  }
+  
+  .logo-ring {
+    position: absolute;
+    inset: 0;
+    border: 4px solid #0dd3c5;
+    border-radius: 50%;
+    opacity: 0.3;
+    transition: transform 1s, opacity 1s;
+  }
+  
+  .logo-ring.active {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  
+  /* Title */
+  .register-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .register-subtitle {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Form elements */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    display: block;
+    color: #0dd3c5;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .input-group {
+    position: relative;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #1f2937;
+    border: 1px solid #374151;
+    color: white;
+    border-radius: 0.375rem;
+    transition: border-color 0.3s;
+    outline: none;
+    font-size: 0.875rem;
+  }
+  
+  .form-input:focus {
+    border-color: #0dd3c5;
+  }
+  
+  .form-input.error {
+    border-color: #ff4d4d;
+  }
+  
+  .form-input::placeholder {
+    color: #6b7280;
+  }
+  
+  .input-underline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background-color: #0dd3c5;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+    width: 100%;
+  }
+  
+  .form-input:focus + .input-underline {
+    transform: scaleX(1);
+  }
+  
+  /* Validation errors */
+  .validation-error {
+    color: #ff4d4d;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+  }
+  
+  /* Register button */
+  .register-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #0dd3c5;
+    color: white;
+    font-weight: bold;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    transform: translateY(0);
+    transition: background-color 0.3s, transform 0.3s;
+    margin-bottom: 1rem;
+  }
+  
+  .register-button:hover {
+    background-color: #0ab3a7;
+    transform: translateY(1px);
+  }
+  
+  .register-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* Loading animation */
+  .loading-spinner {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Error and success messages */
+  .error-message {
+    color: #ff4d4d;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    background-color: rgba(255, 77, 77, 0.1);
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+  }
+  
+  .success-message {
+    color: #0dd3c5;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    background-color: rgba(13, 211, 197, 0.1);
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(13, 211, 197, 0.3);
+  }
+  
+  /* Switch form */
+  .switch-form {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
+  
+  .switch-button {
+    background: none;
+    border: none;
+    color: #0dd3c5;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.875rem;
+    transition: color 0.3s;
+  }
+  
+  .switch-button:hover {
+    color: #0ab3a7;
+  }
+  
+  /* Security features */
+  .security-features {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .security-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+  
+  .feature-icon {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.25rem;
+    border-radius: 50%;
+    background-color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .feature-icon svg {
+    width: 1rem;
+    height: 1rem;
+    color: #0dd3c5;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 640px) {
+    .register-card {
+      padding: 1.5rem;
+      margin: 10px;
+    }
+    
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    
+    .register-title {
+      font-size: 1.25rem;
+    }
+    
+    .security-features {
+      gap: 0.5rem;
+    }
+    
+    .security-feature {
+      font-size: 0.625rem;
+    }
+    
+    .feature-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    
+    .feature-icon svg {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+  }

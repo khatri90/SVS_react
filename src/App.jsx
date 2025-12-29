@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import LoginPage from './LoginPage'
+import RegisterPage from './RegisterPage'
 import Dashboard from './Dashboard'
 import { authAPI, getToken } from './api'
 
@@ -7,6 +8,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showRegister, setShowRegister] = useState(false);
   
   // Check for auth token on initial load
   useEffect(() => {
@@ -43,6 +45,20 @@ function App() {
     await authAPI.logout();
     setUser(null);
     setIsLoggedIn(false);
+    setShowRegister(false); // Reset to login page
+  }
+  
+  const handleRegisterSuccess = () => {
+    // After successful registration, switch to login
+    setShowRegister(false);
+  }
+  
+  const switchToLogin = () => {
+    setShowRegister(false);
+  }
+  
+  const switchToRegister = () => {
+    setShowRegister(true);
   }
   
   // Show loading state
@@ -65,7 +81,19 @@ function App() {
       {isLoggedIn ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : (
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
+        <>
+          {showRegister ? (
+            <RegisterPage 
+              onRegisterSuccess={handleRegisterSuccess}
+              onSwitchToLogin={switchToLogin}
+            />
+          ) : (
+            <LoginPage 
+              onLoginSuccess={handleLoginSuccess}
+              onSwitchToRegister={switchToRegister}
+            />
+          )}
+        </>
       )}
     </>
   )

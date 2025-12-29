@@ -1,12 +1,85 @@
-# React + Vite
+# Signature Verification System - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based frontend for the Signature Verification System, designed to capture, manage, and verify signatures using advanced image processing.
 
-Currently, two official plugins are available:
+![Landing Page](./login.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **User Authentication**: Secure Login and Registration pages.
+- **Dashboard**: Centralized view for managing signature activities.
+- **Signature Capture**: 
+    - **Camera Capture**: Real-time signature capture using device camera.
+    - **Interactive Upload**: Drag-and-drop support for signature images.
+- **Signature Management**: View, delete, and organize stored signatures.
+- **Verification**: Form interface to submit signatures for verification against stored profiles.
+- **Feedback**: Dynamic animations and loading states for better user experience.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Architecture
+
+```mermaid
+graph LR
+    User[User / Client] --> ReactApp[React Frontend (Vite)]
+    ReactApp -->|HTTP/REST| DjangoAPI[Django Backend API]
+    DjangoAPI -->|Auth/Data| DB[(Database)]
+    DjangoAPI -->|Image Processing| CV[OpenCV / TensorFlow]
+    
+    subgraph Frontend
+    ReactApp
+    end
+    
+    subgraph Backend
+    DjangoAPI
+    DB
+    CV
+    end
+```
+
+## Tech Interface
+
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Styling**: CSS Modules / Custom CSS
+- **State Management**: React Hooks
+- **HTTP Client**: Axios (implied) / Fetch
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/signature-verification-frontend.git
+    cd signature-verification-frontend
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Run the development server:
+    ```bash
+    npm run dev
+    ```
+
+4.  Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+
+## Project Structure
+
+```
+src/
+├── assets/          # Static assets
+├── components/      # Reusable UI components
+├── pages/           # Page components (Login, Register, Dashboard)
+├── helpers/         # Utility functions (ImageProcessor)
+└── api.js           # API configuration
+```
+
+## License
+
+[MIT](LICENSE)
